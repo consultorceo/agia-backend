@@ -14,10 +14,12 @@ const app = express();
 const PUERTO = process.env.PORT || 3000;
 
 // ── Seguridad y configuración ────────────────────────────
-app.use(helmet());
+app.use(cors({ origin: "*", methods: ["GET", "POST", "PATCH", "DELETE", "OPTIONS"] }));
+app.options("*", cors());
+app.use(helmet({ contentSecurityPolicy: false, crossOriginEmbedderPolicy: false }));
 app.use(cors({
-  origin: process.env.ORIGENES_PERMITIDOS?.split(",") || "*",
-  methods: ["GET", "POST", "PATCH", "DELETE"],
+  origin: "*",
+  methods: ["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
 }));
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true }));
