@@ -69,7 +69,7 @@ RESPONDE SIEMPRE EN JSON:
       }));
 
       const chat = this.ai.chats.create({
-        model: "gemini-2.0-flash",
+        model: "gemini-1.5-flash",
         history: historialFormateado,
         config: {
           systemInstruction: this.construirContexto(),
@@ -116,7 +116,7 @@ Sé breve, directo y ordenado por urgencia. Máximo 150 palabras.
       `.trim();
 
       const respuesta = await this.ai.models.generateContent({
-        model: "gemini-2.0-flash",
+        model: "gemini-1.5-flash",
         contents: prompt,
       });
 
