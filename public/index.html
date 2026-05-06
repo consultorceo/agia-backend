@@ -5,39 +5,36 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>AGIA — Asistente de Gerencia</title>
 <style>
-* { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background: #0D1117; color: #E8EAF0; min-height: 100vh; display: flex; flex-direction: column; }
-.header { background: #080C12; border-bottom: 1px solid rgba(255,255,255,0.06); padding: 14px 20px; display: flex; align-items: center; gap: 12px; }
-.logo { width: 34px; height: 34px; background: linear-gradient(135deg,#2E7D9A,#1A3A5C); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; color: #fff; }
-.hinfo h1 { font-size: 15px; font-weight: 500; }
-.hinfo p { font-size: 10px; color: rgba(255,255,255,0.35); }
-.hdot { width: 7px; height: 7px; border-radius: 50%; background: #1D9E75; margin-left: auto; animation: pulse 2s infinite; }
-@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
-.chat { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; max-width: 680px; width: 100%; margin: 0 auto; }
-.welcome { text-align: center; padding: 48px 20px; color: rgba(255,255,255,0.3); font-size: 14px; line-height: 1.8; }
-.welcome strong { color: rgba(255,255,255,0.7); display: block; font-size: 18px; margin-bottom: 8px; }
-.mlbl { font-size: 10px; color: rgba(255,255,255,0.28); margin-bottom: 3px; }
-.mlbl.r { text-align: right; }
-.msg { max-width: 84%; padding: 11px 15px; border-radius: 14px; font-size: 14px; line-height: 1.6; }
-.msg.ag { background: #161B24; border: 1px solid rgba(255,255,255,0.07); align-self: flex-start; border-bottom-left-radius: 3px; }
-.msg.me { background: #1A3A5C; align-self: flex-end; border-bottom-right-radius: 3px; }
-.fbadge { display: inline-block; font-size: 10px; padding: 2px 8px; border-radius: 20px; background: rgba(46,125,154,0.18); color: #2E9AC4; margin-top: 6px; }
-.typing { display: none; align-self: flex-start; padding: 12px 16px; background: #161B24; border: 1px solid rgba(255,255,255,0.07); border-radius: 14px; border-bottom-left-radius: 3px; gap: 4px; }
-.typing.on { display: flex; }
-.dot { width: 6px; height: 6px; border-radius: 50%; background: #2E9AC4; animation: bbounce .8s infinite; }
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#0D1117;color:#E8EAF0;min-height:100vh;display:flex;flex-direction:column}
+.header{background:#080C12;border-bottom:1px solid rgba(255,255,255,0.06);padding:14px 20px;display:flex;align-items:center;gap:12px}
+.logo{width:34px;height:34px;background:linear-gradient(135deg,#2E7D9A,#1A3A5C);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:#fff;flex-shrink:0}
+.hinfo h1{font-size:15px;font-weight:500}
+.hinfo p{font-size:10px;color:rgba(255,255,255,0.35)}
+.hdot{width:7px;height:7px;border-radius:50%;background:#1D9E75;margin-left:auto;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.chat{flex:1;padding:20px;overflow-y:auto;display:flex;flex-direction:column;gap:10px;max-width:680px;width:100%;margin:0 auto}
+.welcome{text-align:center;padding:48px 20px;color:rgba(255,255,255,0.3);font-size:14px;line-height:1.8}
+.welcome strong{color:rgba(255,255,255,0.7);display:block;font-size:18px;margin-bottom:8px}
+.mlbl{font-size:10px;color:rgba(255,255,255,0.28);margin-bottom:3px}
+.mlbl.r{text-align:right}
+.msg{max-width:84%;padding:11px 15px;border-radius:14px;font-size:14px;line-height:1.6;white-space:pre-wrap;word-break:break-word}
+.msg.ag{background:#161B24;border:1px solid rgba(255,255,255,0.07);align-self:flex-start;border-bottom-left-radius:3px}
+.msg.me{background:#1A3A5C;align-self:flex-end;border-bottom-right-radius:3px}
+.fbadge{display:inline-block;font-size:10px;padding:2px 8px;border-radius:20px;background:rgba(46,125,154,0.18);color:#2E9AC4;margin-top:6px}
+.typing{display:none;align-self:flex-start;padding:12px 16px;background:#161B24;border:1px solid rgba(255,255,255,0.07);border-radius:14px;border-bottom-left-radius:3px;gap:4px}
+.typing.on{display:flex}
+.dot{width:6px;height:6px;border-radius:50%;background:#2E9AC4;animation:bb .8s infinite}
 .dot:nth-child(2){animation-delay:.15s}.dot:nth-child(3){animation-delay:.3s}
-@keyframes bonce{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
-@keyframes bbourne{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
-@keyframes bbounc{0%,100%{opacity:.4}50%{opacity:1}}
-@keyframes bbounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
-.iarea { background: #161B24; border-top: 1px solid rgba(255,255,255,0.06); padding: 12px 20px; }
-.iwrap { max-width: 680px; margin: 0 auto; display: flex; gap: 10px; align-items: flex-end; }
-textarea { flex:1; background: #1E2530; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 10px 14px; font-size: 14px; color: #E8EAF0; resize: none; outline: none; font-family: inherit; line-height: 1.5; max-height: 120px; }
-textarea:focus { border-color: #2E7D9A; }
-textarea::placeholder { color: rgba(255,255,255,0.22); }
-.sbtn { width: 40px; height: 40px; background: #1A3A5C; border: none; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-.sbtn:hover { background: #2E5C8A; }
-.sbtn svg { width: 17px; height: 17px; fill: #fff; }
+@keyframes bb{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+.iarea{background:#161B24;border-top:1px solid rgba(255,255,255,0.06);padding:12px 20px}
+.iwrap{max-width:680px;margin:0 auto;display:flex;gap:10px;align-items:flex-end}
+textarea{flex:1;background:#1E2530;border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:10px 14px;font-size:14px;color:#E8EAF0;resize:none;outline:none;font-family:inherit;line-height:1.5;max-height:120px}
+textarea:focus{border-color:#2E7D9A}
+textarea::placeholder{color:rgba(255,255,255,0.22)}
+button#sbtn{width:40px;height:40px;min-width:40px;background:#1A3A5C;border:none;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;padding:0}
+button#sbtn:hover{background:#2E5C8A}
+button#sbtn svg{width:17px;height:17px;fill:#fff;pointer-events:none}
 </style>
 </head>
 <body>
@@ -54,53 +51,98 @@ textarea::placeholder { color: rgba(255,255,255,0.22); }
     <strong>Buenos días, Carlos</strong>
     Escriba su instrucción o pregunta.<br>AGIA está lista para ayudarle.
   </div>
-  <div class="typing" id="typ"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+  <div class="typing" id="typ">
+    <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+  </div>
 </div>
 <div class="iarea">
   <div class="iwrap">
-    <textarea id="inp" rows="1" placeholder="Escriba aquí su instrucción..." onkeydown="hk(event)" oninput="ar(this)"></textarea>
-    <button class="sbtn" onclick="send()"><svg viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2z"/></svg></button>
+    <textarea id="inp" rows="1" placeholder="Escriba aquí su instrucción..."></textarea>
+    <button id="sbtn" type="button">
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M2 21l21-9L2 3v7l15 2-15 2z"/>
+      </svg>
+    </button>
   </div>
 </div>
+
 <script>
-const API='https://agia-backend.vercel.app/agia';
-const UID='piloto_001';
-function ar(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,120)+'px';}
-function hk(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send();}}
-function addMsg(txt,tipo,frente){
-  const chat=document.getElementById('chat');
-  const typ=document.getElementById('typ');
-  const lb=document.createElement('div');
-  lb.className='mlbl'+(tipo==='me'?' r':'');
-  lb.textContent=tipo==='me'?'Usted':'AGIA';
-  const m=document.createElement('div');
-  m.className='msg '+tipo;
-  m.textContent=txt;
-  if(frente&&frente!=='general'){
-    const b=document.createElement('div');
-    b.className='fbadge';b.textContent=frente;m.appendChild(b);
+(function() {
+  var API = 'https://agia-backend.vercel.app/agia';
+  var UID = 'piloto_001';
+
+  var inp = document.getElementById('inp');
+  var sbtn = document.getElementById('sbtn');
+  var chat = document.getElementById('chat');
+  var typ = document.getElementById('typ');
+
+  function autoResize() {
+    inp.style.height = 'auto';
+    inp.style.height = Math.min(inp.scrollHeight, 120) + 'px';
   }
-  chat.insertBefore(lb,typ);
-  chat.insertBefore(m,typ);
-  chat.scrollTop=chat.scrollHeight;
-}
-async function send(){
-  const inp=document.getElementById('inp');
-  const txt=inp.value.trim();
-  if(!txt)return;
-  inp.value='';inp.style.height='auto';
-  addMsg(txt,'me');
-  const typ=document.getElementById('typ');
-  typ.classList.add('on');
-  document.getElementById('chat').scrollTop=99999;
-  try{
-    const r=await fetch(API+'/mensaje',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({usuarioId:UID,mensaje:txt})});
-    const d=await r.json();
-    typ.classList.remove('on');
-    if(d.respuesta?.mensaje)addMsg(d.respuesta.mensaje,'ag',d.respuesta.frente);
-    else addMsg('Hubo un problema. Intente nuevamente.','ag');
-  }catch(e){typ.classList.remove('on');addMsg('Error de conexión.','ag');}
-}
+
+  function addMsg(txt, tipo, frente) {
+    var lb = document.createElement('div');
+    lb.className = 'mlbl' + (tipo === 'me' ? ' r' : '');
+    lb.textContent = tipo === 'me' ? 'Usted' : 'AGIA';
+
+    var m = document.createElement('div');
+    m.className = 'msg ' + tipo;
+    m.textContent = txt;
+
+    if (frente && frente !== 'general') {
+      var b = document.createElement('div');
+      b.className = 'fbadge';
+      b.textContent = frente;
+      m.appendChild(b);
+    }
+
+    chat.insertBefore(lb, typ);
+    chat.insertBefore(m, typ);
+    chat.scrollTop = chat.scrollHeight;
+  }
+
+  function enviar() {
+    var txt = inp.value.trim();
+    if (!txt) return;
+
+    inp.value = '';
+    inp.style.height = 'auto';
+    addMsg(txt, 'me');
+    typ.classList.add('on');
+    chat.scrollTop = 99999;
+
+    fetch(API + '/mensaje', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ usuarioId: UID, mensaje: txt })
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+      typ.classList.remove('on');
+      if (d && d.respuesta && d.respuesta.mensaje) {
+        addMsg(d.respuesta.mensaje, 'ag', d.respuesta.frente);
+      } else {
+        addMsg('Hubo un problema. Intente nuevamente.', 'ag');
+      }
+    })
+    .catch(function(e) {
+      typ.classList.remove('on');
+      addMsg('Error de conexión: ' + e.message, 'ag');
+    });
+  }
+
+  sbtn.addEventListener('click', enviar);
+
+  inp.addEventListener('input', autoResize);
+
+  inp.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      enviar();
+    }
+  });
+})();
 </script>
 </body>
 </html>
