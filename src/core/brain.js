@@ -1,125 +1,91 @@
 /**
  * AGIA — Cerebro principal
  * Asistente de Gerencia con Inteligencia Artificial
- *
- * Este módulo es el corazón de AGIA. Recibe cualquier entrada
- * (texto, voz transcrita, contenido de foto o documento) y
- * decide qué hacer con ella: responder, guardar, avisar, generar.
+ * FMC DataLab © 2025
  */
 
-const { GoogleGenerativeAI } = require("@google/generative-ai");
+const { GoogleGenAI } = require("@google/genai");
 
 class AGIACerebro {
   constructor(configuracion) {
-    this.gemini = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-    this.modelo = this.gemini.getGenerativeModel({ model: "gemini-pro" });
-    this.configuracion = configuracion; // datos del usuario y sus frentes
-    this.historial = []; // memoria de la conversación actual
+    this.ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+    this.configuracion = configuracion;
+    this.historial = [];
   }
 
-  /**
-   * Construye el contexto completo de AGIA para este usuario.
-   * Esto es lo que hace que AGIA conozca al usuario y sus frentes.
-   */
   construirContexto() {
     const { usuario, frentes } = this.configuracion;
-
     const frentesTexto = frentes.map(f => `
     FRENTE: ${f.nombre}
     Descripción: ${f.descripcion}
     Personas clave: ${f.personas.map(p => `${p.nombre} (${p.rol})`).join(", ")}
-    Temas que pertenecen acá: ${f.temas.join(", ")}
+    Temas: ${f.temas.join(", ")}
     `).join("\n");
 
     return `
-Eres AGIA — Asistente de Gerencia con Inteligencia Artificial, desarrollado por FMC DataLab.
+Eres AGIA — Asistente de Gerencia con Inteligencia Artificial, de FMC DataLab.
 
-QUIÉN ES TU USUARIO:
-Nombre: ${usuario.nombre}
-Estilo de comunicación: ${usuario.estilo}
-Horario preferido de resumen: ${usuario.horarioResumen}
-Idioma: Español colombiano, directo y formal
+USUARIO: ${usuario.nombre}
+Estilo: ${usuario.estilo}
+Horario resumen: ${usuario.horarioResumen}
+Idioma: Español colombiano, directo y formal.
 
-TUS FRENTES (los mundos que administra tu usuario):
+FRENTES DEL USUARIO:
 ${frentesTexto}
 
-TU MANERA DE SER:
-- Eres conciso. Nunca des rodeos. El usuario es un ejecutivo con 50+ años de experiencia.
-- Siempre identificas a qué frente pertenece cada cosa, sin preguntar si es obvio.
-- Cuando algo queda pendiente de otra persona, lo registras y haces seguimiento automático.
-- Antes de enviar cualquier mensaje en nombre del usuario, muestras el borrador y pides aprobación.
-- Nunca mezclas información de un frente con otro.
-- Cuando analizas un documento, vas directo a lo importante: cifras clave, diferencias con lo anterior, alertas.
-- Si algo vence pronto, avisas con suficiente anticipación para actuar.
-- Tu tono es el del propio usuario: formal, directo, sin adornos.
+REGLAS:
+- Sé conciso. El usuario es ejecutivo con 50+ años de experiencia.
+- Identifica siempre a qué frente pertenece cada cosa.
+- Antes de enviar mensajes en su nombre, muestra el borrador.
+- Nunca mezcles información entre frentes.
+- Tu tono es el del usuario: formal, directo, sin rodeos.
 
-LO QUE PUEDES HACER:
-1. ORGANIZAR: Guardar y recuperar pendientes de cada frente
-2. SEGUIMIENTO: Registrar compromisos de terceros y avisar si no responden
-3. ANALIZAR: Leer documentos, cotizaciones y contratos, y resumir lo importante
-4. GENERAR: Redactar cartas, mensajes, resúmenes y actas
-5. ALERTAR: Avisar de vencimientos con anticipación suficiente
-
-LO QUE NUNCA HACES:
-- Enviar mensajes sin aprobación explícita del usuario
-- Tomar decisiones importantes sin consultar
-- Mezclar información entre frentes
-- Dar rodeos cuando el usuario quiere una respuesta directa
-
-FORMATO DE TUS RESPUESTAS:
-Responde siempre en JSON con esta estructura exacta:
+RESPONDE SIEMPRE EN JSON:
 {
   "tipo": "respuesta | pendiente | borrador | alerta | analisis",
-  "frente": "nombre del frente o 'general' si aplica a todo",
-  "mensaje": "lo que le dices al usuario en lenguaje natural",
-  "accion": {
-    "tipo": "ninguna | guardar_pendiente | crear_seguimiento | generar_borrador | registrar_alerta",
-    "datos": {} 
-  },
+  "frente": "nombre del frente o general",
+  "mensaje": "respuesta al usuario",
+  "accion": { "tipo": "ninguna | guardar_pendiente | crear_seguimiento | generar_borrador", "datos": {} },
   "requiereAprobacion": false
 }
     `.trim();
   }
 
-  /**
-   * Procesa cualquier entrada del usuario y devuelve la respuesta de AGIA.
-   * @param {string} entrada - Lo que dijo o mandó el usuario
-   * @param {string} tipoEntrada - "texto", "voz", "foto", "documento", "whatsapp"
-   * @param {object} metadatos - Información adicional (nombre de archivo, etc.)
-   */
   async procesar(entrada, tipoEntrada = "texto", metadatos = {}) {
     try {
-      // Preparar el mensaje con contexto del tipo de entrada
-      const mensajeUsuario = this._prepararMensaje(entrada, tipoEntrada, metadatos);
+      const prefijos = {
+        texto: "",
+        voz: "[Mensaje de voz transcrito] ",
+        foto: `[Foto de documento${metadatos.nombre ? ` "${metadatos.nombre}"` : ""}] `,
+        documento: `[Documento${metadatos.nombre ? ` "${metadatos.nombre}"` : ""}] `,
+        whatsapp: "[Mensaje reenviado de WhatsApp] ",
+      };
 
-      // Construir el historial para que AGIA recuerde la conversación
-      const historialGemini = this.historial.map(h => ({
-        role: h.rol,
+      const mensajeUsuario = (prefijos[tipoEntrada] || "") + entrada;
+
+      const historialFormateado = this.historial.map(h => ({
+        role: h.rol === "model" ? "model" : "user",
         parts: [{ text: h.contenido }],
       }));
 
-      // Iniciar chat con contexto completo
-      const chat = this.modelo.startChat({
-        history: historialGemini,
-        systemInstruction: this.construirContexto(),
-        generationConfig: {
-          temperature: 0.3, // Más bajo = más consistente y predecible
+      const chat = this.ai.chats.create({
+        model: "gemini-2.0-flash",
+        history: historialFormateado,
+        config: {
+          systemInstruction: this.construirContexto(),
+          temperature: 0.3,
           maxOutputTokens: 1024,
         },
       });
 
-      // Enviar mensaje y obtener respuesta
-      const resultado = await chat.sendMessage(mensajeUsuario);
-      const respuestaTexto = resultado.response.text();
+      const resultado = await chat.sendMessage({ message: mensajeUsuario });
+      const respuestaTexto = resultado.text;
 
-      // Parsear la respuesta JSON de AGIA
       const respuesta = this._parsearRespuesta(respuestaTexto);
 
-      // Guardar en historial
       this.historial.push({ rol: "user", contenido: mensajeUsuario });
       this.historial.push({ rol: "model", contenido: respuestaTexto });
 
-      // Limitar historial a las últimas 20 interacciones (memoria reciente)
       if (this.historial.length > 40) {
         this.historial = this.historial.slice(-40);
       }
@@ -127,7 +93,7 @@ Responde siempre en JSON con esta estructura exacta:
       return respuesta;
 
     } catch (error) {
-      console.error("Error en el cerebro de AGIA:", error);
+      console.error("Error en cerebro AGIA:", error.message);
       return {
         tipo: "respuesta",
         frente: "general",
@@ -139,37 +105,37 @@ Responde siempre en JSON con esta estructura exacta:
     }
   }
 
-  /**
-   * Prepara el mensaje según el tipo de entrada.
-   */
-  _prepararMensaje(entrada, tipoEntrada, metadatos) {
-    const prefijos = {
-      texto: "",
-      voz: "[El usuario envió un mensaje de voz. Transcripción: ] ",
-      foto: `[El usuario envió una foto${metadatos.nombre ? ` llamada "${metadatos.nombre}"` : ""}. Contenido extraído: ] `,
-      documento: `[El usuario envió un documento${metadatos.nombre ? ` llamado "${metadatos.nombre}"` : ""}. Contenido: ] `,
-      whatsapp: "[El usuario reenvió este mensaje de WhatsApp para que lo proceses: ] ",
-    };
+  async generarResumenDiario(pendientes, vencimientos) {
+    try {
+      console.log("Gemini API Key presente:", !!process.env.GEMINI_API_KEY);
+      const prompt = `
+Genera el resumen diario de buenos días para el usuario Carlos.
+Pendientes por frente: ${JSON.stringify(pendientes)}
+Vencimientos próximos (7 días): ${JSON.stringify(vencimientos)}
+Sé breve, directo y ordenado por urgencia. Máximo 150 palabras.
+      `.trim();
 
-    return (prefijos[tipoEntrada] || "") + entrada;
+      const respuesta = await this.ai.models.generateContent({
+        model: "gemini-2.0-flash",
+        contents: prompt,
+      });
+
+      return respuesta.text;
+    } catch (error) {
+      console.error("Error Gemini generarResumenDiario:", error.message);
+      throw error;
+    }
   }
 
-  /**
-   * Parsea la respuesta JSON de AGIA.
-   * Si AGIA no devuelve JSON válido, lo convierte en respuesta básica.
-   */
   _parsearRespuesta(texto) {
     try {
-      // Buscar JSON en la respuesta (a veces viene con texto alrededor)
       const inicio = texto.indexOf("{");
       const fin = texto.lastIndexOf("}");
       if (inicio !== -1 && fin !== -1) {
-        const jsonLimpio = texto.substring(inicio, fin + 1);
-        return JSON.parse(jsonLimpio);
+        return JSON.parse(texto.substring(inicio, fin + 1));
       }
-      throw new Error("No se encontró JSON en la respuesta");
+      throw new Error("No JSON encontrado");
     } catch {
-      // Si no es JSON válido, devolver respuesta básica con el texto
       return {
         tipo: "respuesta",
         frente: "general",
@@ -180,31 +146,6 @@ Responde siempre en JSON con esta estructura exacta:
     }
   }
 
-  /**
-   * Genera el resumen diario del usuario.
-   * Se ejecuta automáticamente a la hora configurada.
-   */
-  async generarResumenDiario(pendientes, vencimientos) {
-    try {
-      const prompt = `
-Genera el resumen diario de buenos días para el usuario.
-Pendientes activos por frente: ${JSON.stringify(pendientes)}
-Vencimientos próximos (7 días): ${JSON.stringify(vencimientos)}
-Sé breve, directo y ordenado por urgencia.
-      `;
-      console.log("Llamando a Gemini. API Key presente:", !!process.env.GEMINI_API_KEY);
-      const respuesta = await this.modelo.generateContent(prompt);
-      return respuesta.response.text();
-    } catch (error) {
-      console.error("Error Gemini en generarResumenDiario:", error.message);
-      throw error;
-    }
-  }
-
-  /**
-   * Limpia el historial de conversación.
-   * Se ejecuta al inicio de cada sesión nueva.
-   */
   limpiarHistorial() {
     this.historial = [];
   }
