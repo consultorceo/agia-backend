@@ -181,7 +181,8 @@ router.get("/resumen-diario", async (req, res) => {
     res.json({ ok: true, resumen, pendientes, vencimientos });
 
   } catch (error) {
-    res.status(500).json({ error: "Error generando resumen" });
+    console.error("Error resumen-diario:", error.message, error.stack);
+    res.status(500).json({ error: "Error generando resumen", detalle: error.message });
   }
 });
 

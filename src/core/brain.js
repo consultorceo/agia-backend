@@ -185,15 +185,20 @@ Responde siempre en JSON con esta estructura exacta:
    * Se ejecuta automáticamente a la hora configurada.
    */
   async generarResumenDiario(pendientes, vencimientos) {
-    const prompt = `
+    try {
+      const prompt = `
 Genera el resumen diario de buenos días para el usuario.
 Pendientes activos por frente: ${JSON.stringify(pendientes)}
 Vencimientos próximos (7 días): ${JSON.stringify(vencimientos)}
 Sé breve, directo y ordenado por urgencia.
-    `;
-
-    const respuesta = await this.modelo.generateContent(prompt);
-    return respuesta.response.text();
+      `;
+      console.log("Llamando a Gemini. API Key presente:", !!process.env.GEMINI_API_KEY);
+      const respuesta = await this.modelo.generateContent(prompt);
+      return respuesta.response.text();
+    } catch (error) {
+      console.error("Error Gemini en generarResumenDiario:", error.message);
+      throw error;
+    }
   }
 
   /**
