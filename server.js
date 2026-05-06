@@ -34,13 +34,7 @@ app.use("/agia", rutas);
 
 // ── Ruta raíz ────────────────────────────────────────────
 app.get("/", (req, res) => {
-  res.json({
-    mensaje: "AGIA está activa",
-    descripcion: "Asistente de Gerencia con Inteligencia Artificial",
-    desarrollador: "FMC DataLab",
-    documentacion: "/agia/estado",
-    version: "1.0.0",
-  });
+  res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
 // ── Manejo de rutas no encontradas ───────────────────────
