@@ -12,7 +12,7 @@ const { GoogleGenerativeAI } = require("@google/generative-ai");
 class AGIACerebro {
   constructor(configuracion) {
     this.gemini = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-    this.modelo = this.gemini.getGenerativeModel({ model: "gemini-1.5-flash" });
+    this.modelo = this.gemini.getGenerativeModel({ model: "gemini-pro" });
     this.configuracion = configuracion; // datos del usuario y sus frentes
     this.historial = []; // memoria de la conversación actual
   }
