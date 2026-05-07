@@ -28,7 +28,7 @@ function obtenerCerebro(usuarioId) {
 
     const configuracion = {
       usuario: {
-        nombre: "Carlos",                  // viene del perfil del usuario
+        nombre: "Horacio",                  // viene del perfil del usuario
         estilo: "formal, directo, sin rodeos",
         horarioResumen: "7:00 am",
       },

@@ -135,7 +135,7 @@ RESPONDE SIEMPRE EN JSON con exactamente esta estructura:
   async generarResumenDiario(pendientes, vencimientos) {
     console.log("Claude API Key presente:", !!process.env.ANTHROPIC_API_KEY);
 
-    const prompt = `Genera el resumen diario de buenos días para el usuario ${this.configuracion.usuario.nombre}.
+    const prompt = `Genera el resumen diario de buenos días para el usuario Horacio.
 
 Pendientes activos por frente: ${JSON.stringify(pendientes)}
 Vencimientos próximos (7 días): ${JSON.stringify(vencimientos)}
